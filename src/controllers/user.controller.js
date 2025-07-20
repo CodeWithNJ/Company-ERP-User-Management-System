@@ -146,3 +146,47 @@ export const createNewUser = async (req, res) => {
   apiResponse(res, true, "New user created successfully", null, 201);
   return;
 };
+
+export const getAllUsers = async (req, res) => {
+  const userDetails = await prisma.users.findUnique({
+    where: {
+      user_id: req?.user.user_id,
+    },
+  });
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  // Example: Using Prisma
+  const users = await prisma.users.findMany({
+    where: {
+      company_id: userDetails.company_id,
+    },
+    skip: offset,
+    take: limit,
+    omit: {
+      password: true,
+      refresh_token: true,
+    },
+  });
+
+  const totalUsers = await prisma.users.count({
+    where: {
+      company_id: userDetails.company_id,
+    },
+  });
+  const totalPages = Math.ceil(totalUsers / limit);
+
+  res.status(200).json({
+    success: true,
+    message: "All users fetched successfully.",
+    data: users,
+    meta: {
+      total_users: totalUsers,
+      page,
+      limit,
+      totalPages,
+    },
+  });
+};
