@@ -25,6 +25,9 @@ export const userLogin = async (req, res) => {
     where: {
       email,
     },
+    include: {
+      role: true,
+    },
   });
 
   // User not found.
@@ -35,9 +38,7 @@ export const userLogin = async (req, res) => {
 
   // User exists, check the password.
 
-  // Check password for user having admin role.
-  if (validUser.role === "CA") {
-    // Incorrect password for admin.
+  if (validUser.role.role_name === "Company Admin") {
     if (password !== validUser.password) {
       apiResponse(res, false, "Incorrect password.", null, 400);
       return;
@@ -110,8 +111,11 @@ export const createNewUser = async (req, res) => {
     where: {
       user_id: req?.user.user_id,
     },
+    include: {
+      role: true,
+    },
   });
-  if (userDetails.role !== "CA") {
+  if (userDetails.role.role_name !== "Company Admin") {
     apiResponse(
       res,
       false,
@@ -121,7 +125,7 @@ export const createNewUser = async (req, res) => {
     );
     return;
   }
-  const { full_name, email, password, role } = req.body;
+  const { full_name, email, password, role_id } = req.body;
   // Check whether user already exists for the provided email.
   const userExists = await prisma.users.findUnique({
     where: {
@@ -139,7 +143,7 @@ export const createNewUser = async (req, res) => {
       email,
       company_id: userDetails.company_id,
       password: hashedPassword,
-      role,
+      role_id,
       created_by: userDetails.user_id,
     },
   });

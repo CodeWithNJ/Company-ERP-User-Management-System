@@ -12,25 +12,33 @@ model company {
   company_name String   @unique(map: "company_name") @db.VarChar(100)
   created_at   DateTime @default(now()) @db.Timestamp(0)
   updated_at   DateTime @default(now()) @db.Timestamp(0)
+  users        users[]
 }
 
 model users {
-  user_id       Int        @id @default(autoincrement())
-  full_name     String     @db.VarChar(100)
-  email         String     @unique(map: "email") @db.VarChar(50)
-  password      String     @db.VarChar(500)
-  role          users_role
+  user_id       Int      @id @default(autoincrement())
+  full_name     String   @db.VarChar(100)
+  email         String   @unique(map: "email") @db.VarChar(50)
+  password      String   @db.VarChar(500)
   company_id    Int
-  refresh_token String?    @db.VarChar(1000)
+  role_id       Int
+  refresh_token String?  @db.VarChar(1000)
   created_by    Int?
-  created_at    DateTime   @default(now()) @db.Timestamp(0)
-  updated_at    DateTime   @default(now()) @db.Timestamp(0)
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  updated_at    DateTime @default(now()) @db.Timestamp(0)
 
-  @@index([company_id], map: "company_id")
+  company company @relation(fields: [company_id], references: [company_id])
+  role    roles   @relation(fields: [role_id], references: [role_id])
+
+  @@index([company_id], map: "fk_users_company")
+  @@index([role_id], map: "fk_users_roles")
 }
 
-enum users_role {
-  CA
-  SM
-  FM
+model roles {
+  role_id    Int      @id @default(autoincrement())
+  role_name  String?  @unique(map: "role_name") @db.VarChar(50)
+  role_code  String?  @unique(map: "role_code") @db.VarChar(10)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  users      users[]
 }

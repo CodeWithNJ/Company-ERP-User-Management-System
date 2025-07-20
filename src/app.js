@@ -22,6 +22,8 @@ app.use(
 
 // Routes
 import userRouter from "./routes/user.route.js";
+import rolesRouter from "./routes/roles.route.js";
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/roles", rolesRouter);
 
 export default app;
